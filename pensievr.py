@@ -4,7 +4,9 @@ from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 
 import logging
-# from gaesessions import get_current_session
+from gaesessions import get_current_session
+
+from config import API_KEY, API_SECRET
 
 ################################################################################
 # Model
@@ -18,6 +20,13 @@ class EvernoteUser(db.Model):
 
 ################################################################################
 # Controllers
+
+DOMAIN = "sandbox.evernote.com"
+# DOMAIN = "www.evernote.com"
+
+TEMP_CRED_URI = "https://{0}/oauth".format(DOMAIN)
+OWNER_AUTH_URI = "https://{0}/OAuth.action".format(DOMAIN)
+TOKEN_REQUEST_URI = "https://{0}/oauth".format(DOMAIN)
 
 # index
 class Index:

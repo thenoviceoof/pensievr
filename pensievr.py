@@ -14,9 +14,6 @@ import oauth2 as oauth
 # Model
 
 class EvernoteUser(db.Model):
-    # auth info
-    key = db.StringProperty()
-    secret = db.StringProperty()
     # info about the user
     user_id = db.StringProperty()
     # timestamps
@@ -93,17 +90,20 @@ class OAuthCallback:
         oauth_token_secret = access_token['oauth_token_secret']
         user_id = access_token['edam_userId']
 
-        # !!! fill in with storing the oauth_token
+        # store the oauth_token in the session - only temporary data
+        session['oauth_token'] = oauth_token
+        session['oauth_token_secret'] = oauth_token_secret
+        # !! maybe also store the time in the session too?
+
         user = EvernoteUser.get_or_insert(user_id)
         user.user_id = user_id
-        user.token = oauth_token
-        user.secret = oauth_token_secret
-        user.save()
+        user.put()
 
 # post action
 class Post:
+    # ajax call
     def post(self):
-        # should be ajax?
+        # !!! actually make the Evernote call
         self.response.out.write(template.render("templates/posted.html",{}))
 
 application = webapp.WSGIApplication(

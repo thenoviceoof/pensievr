@@ -4,6 +4,8 @@ from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 from google.appengine.api.app_identity import get_application_id
 import urllib
+# import urlparse
+import cgi
 
 import logging
 from gaesessions import get_current_session
@@ -50,13 +52,14 @@ class OAuth(webapp.RequestHandler):
         client = oauth.Client(consumer)
 
         callback_uri = "https://%s.appspot.com/callback" % get_application_id()
-        callback_uri = urllib.urlencode(callback_uri)
+        callback_uri = urllib.quote(callback_uri)
         request_token_url = TEMP_CRED_URI + "?oauth_callback=%s" % callback_uri
         resp, content = client.request(request_token_url, "GET")
         if resp['status'] != '200':
             raise Exception("Invalid response %s." % resp['status'])
 
-        request_token = dict(urlparse.parse_qsl(content))
+        # deprecated in 2.6+, use urlparse instead
+        request_token = dict(cgi.parse_qsl(content))
 
         oauth_token = request_token['oauth_token']
         oauth_token_secret = request_token['oauth_token_secret']
@@ -67,7 +70,9 @@ class OAuth(webapp.RequestHandler):
             session['oauth_token_secret'] = oauth_token_secret
 
         # redirect to the auth page
-        self.redirect(OWNER_AUTH_URI + "?oauth_token={0}".format(oauth_token))
+        self.redirect(OWNER_AUTH_URI + "?oauth_token=%s" % oauth_token)
+    def post(self):
+        self.get()
 
 # callback endpoint of the OAuth process
 class OAuthCallback(webapp.RequestHandler):
@@ -93,7 +98,6 @@ class OAuthCallback(webapp.RequestHandler):
         # store the oauth_token in the session - only temporary data
         session['oauth_token'] = oauth_token
         session['oauth_token_secret'] = oauth_token_secret
-        # !! maybe also store the time in the session too?
 
         user = EvernoteUser.get_or_insert(user_id)
         user.user_id = user_id

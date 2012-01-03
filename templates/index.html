@@ -1,8 +1,10 @@
 {% extends "base.html" %}
 
 {% block main %}
-<button id="signin">
-  Sign in with
-  <img src="/static/img/evernote_logo_4c.png" />
-</button>
+<form action="/oauth" method="GET">
+  <button id="signin">
+    Sign in with
+    <img src="/static/img/evernote_logo_4c.png" />
+  </button>
+</form>
 {% endblock %}

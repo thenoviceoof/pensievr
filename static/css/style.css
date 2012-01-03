@@ -20,6 +20,19 @@
     font:14pt 'Syncopate', arial, sans-serif;
 }
 
+footer {
+    position:absolute;
+    left:0;
+    bottom:0;
+    width:100%;
+    margin:0 auto;
+    font:10pt 'Syncopate', arial, sans-serif;
+    text-align:center;
+}
+
+/* ---------------------------------------------------------------------- */
+/* index.html */
+
 #container #main {
 }
 
@@ -30,14 +43,4 @@
 
 #container #signin img {
     vertical-align:middle;
-}
-
-footer {
-    position:absolute;
-    left:0;
-    bottom:0;
-    width:100%;
-    margin:0 auto;
-    font:8pt 'Syncopate', arial, sans-serif;
-    text-align:center;
 }

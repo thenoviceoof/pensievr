@@ -39,14 +39,20 @@ from config import API_KEY, API_SECRET
 # index
 class Index(webapp.RequestHandler):
     def get(self):
-        if True:
-            self.response.out.write(template.render("templates/index.html",{}))
-        else:
+        session = get_current_session()
+        if session.is_active() and session["done"]:
             self.response.out.write(template.render("templates/post.html",{}))
+        else:
+            self.response.out.write(template.render("templates/index.html",{}))
 
 # get the request token (temporary) and redirect to the authorization page
 class OAuth(webapp.RequestHandler):
     def get(self):
+        session = get_current_session()
+        # since we're logging in again, kill the current session
+        if session.is_active():
+            session.terminate()
+
         # get request token
         consumer = oauth.Consumer(API_KEY, API_SECRET)
         client = oauth.Client(consumer)
@@ -64,10 +70,9 @@ class OAuth(webapp.RequestHandler):
         oauth_token = request_token['oauth_token']
         oauth_token_secret = request_token['oauth_token_secret']
         # set these in session for the callback
-        session = get_current_session()
-        if session.is_active():
-            session['oauth_token'] = oauth_token
-            session['oauth_token_secret'] = oauth_token_secret
+        session['oauth_token'] = oauth_token
+        session['oauth_token_secret'] = oauth_token_secret
+        session['done'] = False
 
         # redirect to the auth page
         self.redirect(OWNER_AUTH_URI + "?oauth_token=%s" % oauth_token)
@@ -78,30 +83,47 @@ class OAuth(webapp.RequestHandler):
 class OAuthCallback(webapp.RequestHandler):
     def get(self):
         session = get_current_session()
+        # make sure the session is active
         if not(session.is_active()):
             raise Exception("Session is not active")
 
+        # get the oauth_verifier passed in
+        oauth_verifier = self.request.get("oauth_verifier", None)
+        if not(oauth_verifier):
+            raise Exception("No verifier passed in")
+
+        # retrieve from session
         oauth_token = session['oauth_token']
         oauth_token_secret= session['oauth_token_secret']
+
+        # create the client
         token = oauth.Token(oauth_token, oauth_token_secret)
         token.set_verifier(oauth_verifier)
         consumer = oauth.Consumer(API_KEY, API_SECRET)
         client = oauth.Client(consumer, token)
 
-        resp, content = client.request(access_token_url, "POST")
-        access_token = dict(urlparse.parse_qsl(content))
+        token_req = TOKEN_REQUEST_URI
+        resp, content = client.request(token_req + "?", "GET")
+        # deprecated in 2.6+, use urlparse instead
+        access_token = dict(cgi.parse_qsl(content))
+
+        log = logging.getLogger(__name__)
+        log.info(access_token)
 
         oauth_token = access_token['oauth_token']
-        oauth_token_secret = access_token['oauth_token_secret']
         user_id = access_token['edam_userId']
+        shard = access_token["edam_shard"]
 
         # store the oauth_token in the session - only temporary data
         session['oauth_token'] = oauth_token
-        session['oauth_token_secret'] = oauth_token_secret
+        session['shard'] = shard
+        session['done'] = True
 
         user = EvernoteUser.get_or_insert(user_id)
         user.user_id = user_id
         user.put()
+
+        self.redirect("/")
 
 # post action
 class Post(webapp.RequestHandler):

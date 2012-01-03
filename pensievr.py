@@ -4,12 +4,15 @@ from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 from google.appengine.api.app_identity import get_application_id
 import urllib
-# import urlparse
+# only becomes available in 2.6
+#import urlparse
 import cgi
 import time
 
 import logging
 from gaesessions import get_current_session
+
+import evernote
 
 import oauth2 as oauth
 

@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 
+{% block tagline %}Track your Thoughts{% endblock %}
+
 {% block main %}
 <form action="/oauth" method="GET">
   <button id="signin">
@@ -7,4 +9,6 @@
     <img src="/static/img/evernote_logo_4c.png" />
   </button>
 </form>
+
+<a id="about" href="#">What's this?</a>
 {% endblock %}

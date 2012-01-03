@@ -7,7 +7,7 @@
 }
 
 #container header {
-    margin:0 0 1em -4em;
+    margin:0 0 0 -4em;
 }
 
 #container header h1 {
@@ -30,17 +30,41 @@ footer {
     text-align:center;
 }
 
-/* ---------------------------------------------------------------------- */
-/* index.html */
-
 #container #main {
 }
 
+/* ---------------------------------------------------------------------- */
+/* index.html */
+
 #container #signin {
+    margin:1em 0;
     padding:0.8em 1em;
     font:12pt 'Syncopate', arial, sans-serif;
 }
 
 #container #signin img {
     vertical-align:middle;
+}
+
+#about {
+    color:gray;
+    font:12pt 'Syncopate', arial, sans-serif;
+}
+
+/* ---------------------------------------------------------------------- */
+/* post.html */
+
+#post {
+    width:20em;
+    height:5em;
+    margin:1em 0;
+    padding:0.5em;
+    font-size:14pt;
+    border:2px #CCC solid;
+    color:gray;
+}
+
+#submit-post {
+    padding:0.8em 1em;
+    font:12pt 'Syncopate', arial, sans-serif;
 }

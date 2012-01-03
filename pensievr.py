@@ -40,7 +40,8 @@ from config import API_KEY, API_SECRET
 class Index(webapp.RequestHandler):
     def get(self):
         session = get_current_session()
-        if session.is_active() and session["done"]:
+        #if session.is_active() and session["done"]:
+        if True:
             self.response.out.write(template.render("templates/post.html",{}))
         else:
             self.response.out.write(template.render("templates/index.html",{}))
@@ -127,8 +128,9 @@ class OAuthCallback(webapp.RequestHandler):
 
 # post action
 class Post(webapp.RequestHandler):
-    # ajax call
+    # ajax call eventually?
     def post(self):
+        post = self.request.get("post")
         # !!! actually make the Evernote call
         self.response.out.write(template.render("templates/posted.html",{}))
 

@@ -1,7 +1,10 @@
 {% extends "base.html" %}
 
+{% block tagline %}What are you thinking?{% endblock %}
+
 {% block main %}
-<textarea id="post">
-What's on your mind?
-</textarea>
+<form action="/post" method="POST" name="post_form">
+  <textarea id="post" name="post"></textarea><br/>
+  <button id="submit-post">Submit</button>
+</form>
 {% endblock %}

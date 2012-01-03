@@ -8,6 +8,10 @@ handlers:
   static_dir: static
   secure: always
 
+- url: /cleanup_sessions
+  script: cleanup_sessions.py
+  login: admin
+
 - url: /.*
   script: pensievr.py
   secure: always

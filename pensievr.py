@@ -139,11 +139,21 @@ class Post(webapp.RequestHandler):
         # !!! actually make the Evernote call
         self.redirect("/?" + urllib.urlencode({"posted":"true"}))
 
+# logout: clear the cookies/session
+class Logout(webapp.RequestHandler):
+    def get(self):
+        session = get_current_session()
+        if session.is_active():
+            session.terminate()
+        # !!! make sure this is handled
+        self.redirect("/?" + urllib.urlencode({"message":"logged out"}))
+
 application = webapp.WSGIApplication(
     [('/', Index),
      ('/post', Post),
      ('/oauth', OAuth),
      ('/callback', OAuthCallback),
+     ('/logout', Logout)
      ],
     debug=True)
 

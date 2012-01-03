@@ -41,8 +41,7 @@ from config import API_KEY, API_SECRET
 class Index(webapp.RequestHandler):
     def get(self):
         session = get_current_session()
-        #if session.is_active() and session["done"]:
-        if True:
+        if session.is_active() and session["done"]:
             posted = self.request.get("posted", None)
             # if we just redirected from posting, then 
             if posted:

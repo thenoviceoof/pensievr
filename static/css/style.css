@@ -1,20 +1,43 @@
 /* unified stylesheet */
 
 #container {
-    margin:25% auto 0 auto;
+    margin:10% auto 0 auto;
+    padding:0 0 0 10em;
     text-align:center;
 }
 
 #container header {
+    margin:0 0 1em -4em;
+}
+
+#container header h1 {
+    margin:-0.1em 0 -0.4em 0;
+    font:72pt 'Monsieur La Doulaise', cursive;
+}
+
+#container header h2 {
+    margin:0 0 0 8em;
+    font:14pt 'Syncopate', arial, sans-serif;
 }
 
 #container #main {
 }
 
+#container #signin {
+    padding:0.8em;
+    font:12pt 'Syncopate', arial, sans-serif;
+}
+
+#container #signin img {
+    vertical-align:middle;
+}
+
 footer {
     position:absolute;
+    left:0;
     bottom:0;
     width:100%;
     margin:0 auto;
+    font:8pt 'Syncopate', arial, sans-serif;
     text-align:center;
 }

@@ -6,6 +6,7 @@ from google.appengine.api.app_identity import get_application_id
 import urllib
 # import urlparse
 import cgi
+import time
 
 import logging
 from gaesessions import get_current_session
@@ -42,7 +43,12 @@ class Index(webapp.RequestHandler):
         session = get_current_session()
         #if session.is_active() and session["done"]:
         if True:
-            self.response.out.write(template.render("templates/post.html",{}))
+            posted = self.request.get("posted", None)
+            # if we just redirected from posting, then 
+            if posted:
+                posted = time.time()
+            pars = {"posted": posted}
+            self.response.out.write(template.render("templates/post.html",pars))
         else:
             self.response.out.write(template.render("templates/index.html",{}))
 
@@ -132,7 +138,7 @@ class Post(webapp.RequestHandler):
     def post(self):
         post = self.request.get("post")
         # !!! actually make the Evernote call
-        self.response.out.write(template.render("templates/posted.html",{}))
+        self.redirect("/?" + urllib.urlencode({"posted":"true"}))
 
 application = webapp.WSGIApplication(
     [('/', Index),

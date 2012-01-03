@@ -68,3 +68,9 @@ footer {
     padding:0.8em 1em;
     font:12pt 'Syncopate', arial, sans-serif;
 }
+
+#last-post {
+    margin-top:0.5em;
+    font:12pt 'Syncopate', arial, sans-serif;
+    color:gray;
+}

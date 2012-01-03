@@ -6,3 +6,7 @@
 
 // auto-focus on the text field
 document.post_form.post.focus();
+
+// convert the seconds to local time
+var t = new Date(1000*$("#last-post span").html());
+$("#last-post span").html(t.toLocaleTimeString());

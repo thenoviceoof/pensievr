@@ -28,22 +28,22 @@ class EvernoteUser(db.Model):
 DOMAIN = "sandbox.evernote.com"
 # DOMAIN = "www.evernote.com"
 
-TEMP_CRED_URI = "https://{0}/oauth".format(DOMAIN)
-OWNER_AUTH_URI = "https://{0}/OAuth.action".format(DOMAIN)
-TOKEN_REQUEST_URI = "https://{0}/oauth".format(DOMAIN)
+TEMP_CRED_URI = "https://%s/oauth" % DOMAIN
+OWNER_AUTH_URI = "https://%s/OAuth.action" % DOMAIN
+TOKEN_REQUEST_URI = "https://%s/oauth" % DOMAIN
 
 from config import API_KEY, API_SECRET
 
 # index
-class Index:
+class Index(webapp.RequestHandler):
     def get(self):
         if True:
-            self.response.out.write(template.render("templates/index.html"),{})
+            self.response.out.write(template.render("templates/index.html",{}))
         else:
             self.response.out.write(template.render("templates/post.html",{}))
 
 # get the request token (temporary) and redirect to the authorization page
-class OAuth:
+class OAuth(webapp.RequestHandler):
     def get(self):
         # get request token
         consumer = oauth.Consumer(API_KEY, API_SECRET)
@@ -70,7 +70,7 @@ class OAuth:
         self.redirect(OWNER_AUTH_URI + "?oauth_token={0}".format(oauth_token))
 
 # callback endpoint of the OAuth process
-class OAuthCallback:
+class OAuthCallback(webapp.RequestHandler):
     def get(self):
         session = get_current_session()
         if not(session.is_active()):
@@ -100,7 +100,7 @@ class OAuthCallback:
         user.put()
 
 # post action
-class Post:
+class Post(webapp.RequestHandler):
     # ajax call
     def post(self):
         # !!! actually make the Evernote call

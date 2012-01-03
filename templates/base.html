@@ -13,17 +13,20 @@
 </head>
 
 <body>
-  <header>
-    <h1>Pensievr</h1>
-    <h2>Track Thoughts</h2>
-  </header>
+  <div id="container">
+    <header>
+      <h1>Pensievr</h1>
+      <h2>Track Thoughts</h2>
+    </header>
 
-  <div role="main">
-    {% block main %}{% endblock %}
+    <div id="main" role="main">
+      {% block main %}{% endblock %}
+    </div>
+
   </div>
 
   <footer>
-    By thenoviceoof
+    By <a href="http://thenoviceoof.com">thenoviceoof</a>
   </footer>
 
   <!-- JavaScript at the bottom for fast page loading -->

@@ -40,6 +40,15 @@ footer {
     margin-top:0.5em;
     color:gray;
     font:12pt 'Syncopate', arial, sans-serif;
+    line-height:2em;
+}
+
+#message a {
+    color:#555;
+}
+
+#message a:visited {
+    color:#888;
 }
 
 #container #signin {

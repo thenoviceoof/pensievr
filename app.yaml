@@ -12,6 +12,13 @@ handlers:
   script: cleanup_sessions.py
   login: admin
 
-- url: /.*
+- url: /(|post|oauth|callback|logout)
   script: pensievr.py
   secure: always
+
+- url: /.*
+  static_files: static/error.html
+  upload: static/error.html
+
+error_handlers:
+- file: static/error.html

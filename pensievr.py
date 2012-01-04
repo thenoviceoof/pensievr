@@ -256,7 +256,7 @@ application = webapp.WSGIApplication(
      ('/post', Post),
      ('/oauth', OAuth),
      ('/callback', OAuthCallback),
-     ('/logout', Logout)
+     ('/logout', Logout),
      ],
     debug=True)
 

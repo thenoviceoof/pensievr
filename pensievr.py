@@ -56,7 +56,7 @@ class Index(webapp.RequestHandler):
             self.response.out.write(template.render("templates/post.html",pars))
         else:
             pars = {}
-            if session.is_active() and session["message"]:
+            if session.is_active() and session.get("message",None):
                 pars["message"] = session["message"]
                 session["message"] = None
             self.response.out.write(template.render("templates/index.html",pars))

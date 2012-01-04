@@ -22,6 +22,7 @@ import oauth2 as oauth
 class EvernoteUser(db.Model):
     # info about the user
     user_id = db.StringProperty()
+    notebook_id = db.StringProperty()
     # timestamps
     create_date = db.DateTimeProperty(auto_now_add=True)
     update_date = db.DateTimeProperty(auto_now_add=True)
@@ -127,18 +128,90 @@ class OAuthCallback(webapp.RequestHandler):
         session['oauth_token'] = oauth_token
         session['shard'] = shard
         session['done'] = True
+        session['user'] = user_id
 
         user = EvernoteUser.get_or_insert(user_id)
-        user.user_id = user_id
-        user.put()
+        if not(user.user_id):
+            user.user_id = user_id
+            user.put()
 
         self.redirect("/")
+
+import evernote.thrift.protocol.TBinaryProtocol as TBinaryProtocol
+import evernote.thrift.transport.THttpClient as THttpClient
+import evernote.evernote.edam.userstore.UserStore as UserStore
+import evernote.evernote.edam.userstore.constants as UserStoreConstants
+import evernote.evernote.edam.notestore.NoteStore as NoteStore
+import evernote.evernote.edam.type.ttypes as Types
+import evernote.evernote.edam.error.ttypes as Errors
+
+NOTESTORE_URI_BASE = "https://%s/edam/note/" % DOMAIN
+NOTEBOOK_NAME = "Pensievr Notebook"
+DEFAULT_NOTE_TITLE = "Untitled"
 
 # post action
 class Post(webapp.RequestHandler):
     # ajax call eventually?
     def post(self):
+        # check if we have session info
+        if not(session.is_active()) or not(session["done"]):
+            raise Exception("Session is not active")
         post = self.request.get("post")
+
+        # check EDAM version...
+        versionOK = userStore.checkVersion("Python EDAMTest",
+                                           UserStoreConstants.EDAM_VERSION_MAJOR,
+                                           UserStoreConstants.EDAM_VERSION_MINOR)
+        if not(versionOK):
+            raise Exception("EDAM versions do not match")
+
+        # set up the thrift protocol
+        noteStoreUri =  NOTESTORE_URI_BASE + shard
+        noteStoreHttpClient = THttpClient.THttpClient(noteStoreUri)
+        noteStoreProtocol = TBinaryProtocol.TBinaryProtocol(noteStoreHttpClient)
+        noteStore = NoteStore.Client(noteStoreProtocol)
+
+        # unwrap the session variables
+        oauth_token = session['oauth_token']
+        shard = session['shard']
+        user_id = session['user']
+        user = EvernoteUser.get(user_id)
+        notebook_id = user.notebook_id
+
+        # get or make the notebook
+        pensievr_nb = None
+        if not(notebook_id):
+            # first look for the notebook
+            notebooks = noteStore.listNotebooks(oauth_token)
+            for notebook in notebooks:
+                if notebook.name == NOTEBOOK_NAME:
+                    pensievr_nb = notebook
+            # if we don't have a pensievr notebook, make one
+            if not(pensievr_nb):
+                pensievr_nb = noteStore.createNotebook(oauth_token,
+                                                       NOTEBOOK_NAME)
+            # update the user
+            notebook_id = pensievr_nb.guid
+            user.notebook_id = notebook_id
+            user.put()
+        else:
+            # !! check if the notebook is deleted
+            pensievr_nb = noteStore.getNotebook(oauth_token, notebook_id)
+
+        # !!! extract tags from the post
+        
+        # make the note
+        note = Types.Note()
+        note.title = DEFAULT_NOTE_TITLE
+        note.content = post
+        note.notebookGuid = notebook_id
+        note.tagNames = 
+        createdNote = noteStore.createNote(authToken, note)
+      
+        note_attr = Types.NoteAttributes()
+        #note_attr.latitude
+        #note_attr.longitude
+
         # !!! actually make the Evernote call
         self.redirect("/?" + urllib.urlencode({"posted":"true"}))
 

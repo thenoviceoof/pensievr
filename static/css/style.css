@@ -63,6 +63,13 @@ footer {
     border:2px #CCC solid;
 }
 
+#logout {
+    display:inline-block;
+    margin:0.5em 0 0 15em;
+    font:10pt 'Syncopate', arial, sans-serif;
+    color:gray;
+}
+
 #submit-post {
     padding:0.8em 1em;
     font:12pt 'Syncopate', arial, sans-serif;

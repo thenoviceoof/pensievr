@@ -3,7 +3,7 @@
 {% block tagline %}What are you thinking?{% endblock %}
 
 {% block main %}
-<a href="/logout">Logout of Pensievr</a>
+<a id="logout" href="/logout">Logout of Pensievr</a>
 {% if posted %}
 <div id="last-post">Last post: <span>{{ posted }}</span></div>
 {% endif %}

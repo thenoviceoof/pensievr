@@ -46,7 +46,7 @@ from config import API_KEY, API_SECRET
 class Index(webapp.RequestHandler):
     def get(self):
         session = get_current_session()
-        if session.is_active() and session["done"]:
+        if session.is_active() and session.get("done", None):
             posted = session.get("posted", None)
             # if we just redirected from posting, then 
             if posted:
@@ -55,7 +55,11 @@ class Index(webapp.RequestHandler):
             pars = {"posted": posted}
             self.response.out.write(template.render("templates/post.html",pars))
         else:
-            self.response.out.write(template.render("templates/index.html",{}))
+            pars = {}
+            if session.is_active() and session["message"]:
+                pars["message"] = session["message"]
+                session["message"] = None
+            self.response.out.write(template.render("templates/index.html",pars))
 
 # get the request token (temporary) and redirect to the authorization page
 class OAuth(webapp.RequestHandler):
@@ -244,8 +248,8 @@ class Logout(webapp.RequestHandler):
         session = get_current_session()
         if session.is_active():
             session.terminate()
-        # !!! make sure this is handled
-        self.redirect("/?" + urllib.urlencode({"message":"logged out"}))
+        session["message"] = "Logged Out"
+        self.redirect("/")
 
 application = webapp.WSGIApplication(
     [('/', Index),

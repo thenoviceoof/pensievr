@@ -36,6 +36,12 @@ footer {
 /* ---------------------------------------------------------------------- */
 /* index.html */
 
+#message {
+    margin-top:0.5em;
+    color:gray;
+    font:12pt 'Syncopate', arial, sans-serif;
+}
+
 #container #signin {
     margin:1em 0;
     padding:0.8em 1em;

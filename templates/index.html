@@ -3,6 +3,9 @@
 {% block tagline %}Track your Thoughts{% endblock %}
 
 {% block main %}
+{% if message %}
+<div id="message">Status: {{ message }}</div>
+{% endif %}
 <form action="/oauth" method="GET">
   <button id="signin">
     Sign in with

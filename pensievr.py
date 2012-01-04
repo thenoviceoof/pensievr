@@ -47,10 +47,11 @@ class Index(webapp.RequestHandler):
     def get(self):
         session = get_current_session()
         if session.is_active() and session["done"]:
-            posted = self.request.get("posted", None)
+            posted = session.get("posted", None)
             # if we just redirected from posting, then 
             if posted:
                 posted = time.time()
+                session["posted"] = None
             pars = {"posted": posted}
             self.response.out.write(template.render("templates/post.html",pars))
         else:
@@ -234,7 +235,8 @@ class Post(webapp.RequestHandler):
             note.attributes = note_attr
         createdNote = noteStore.createNote(oauth_token, note)
 
-        self.redirect("/?" + urllib.urlencode({"posted":"true"}))
+        session["posted"] = True
+        self.redirect("/")
 
 # logout: clear the cookies/session
 class Logout(webapp.RequestHandler):

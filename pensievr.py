@@ -138,13 +138,13 @@ class OAuthCallback(webapp.RequestHandler):
 
         self.redirect("/")
 
-import evernote.thrift.protocol.TBinaryProtocol as TBinaryProtocol
-import evernote.thrift.transport.THttpClient as THttpClient
-import evernote.evernote.edam.userstore.UserStore as UserStore
-import evernote.evernote.edam.userstore.constants as UserStoreConstants
-import evernote.evernote.edam.notestore.NoteStore as NoteStore
-import evernote.evernote.edam.type.ttypes as Types
-import evernote.evernote.edam.error.ttypes as Errors
+import thrift.protocol.TBinaryProtocol as TBinaryProtocol
+import thrift.transport.THttpClient as THttpClient
+import evernote.edam.userstore.UserStore as UserStore
+import evernote.edam.userstore.constants as UserStoreConstants
+import evernote.edam.notestore.NoteStore as NoteStore
+import evernote.edam.type.ttypes as Types
+import evernote.edam.error.ttypes as Errors
 
 NOTESTORE_URI_BASE = "https://%s/edam/note/" % DOMAIN
 NOTEBOOK_NAME = "Pensievr Notebook"

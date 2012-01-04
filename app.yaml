@@ -17,8 +17,8 @@ handlers:
   secure: always
 
 - url: /.*
-  static_files: static/error.html
-  upload: static/error.html
+  static_files: static/404.html
+  upload: static/404.html
 
 error_handlers:
-- file: static/error.html
+- file: templates/error.html

@@ -8,7 +8,13 @@
 <div id="last-post">Last post: <span>{{ posted }}</span></div>
 {% endif %}
 <form action="/post" method="POST" name="post_form">
+  <input type="hidden" name="loc_lat" id="loc_lat" value="" />
+  <input type="hidden" name="loc_long" id="loc_long" value="" />
   <textarea id="post" name="post"></textarea><br/>
   <button id="submit-post">Submit</button>
 </form>
+{% endblock %}
+
+{% block script %}
+<script>get_location();</script>
 {% endblock %}

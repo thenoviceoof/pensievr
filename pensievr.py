@@ -165,7 +165,10 @@ class Post(webapp.RequestHandler):
         session = get_current_session()
         if not(session.is_active()) or not(session["done"]):
             raise Exception("Session is not active")
+
         post = self.request.get("post")
+        loc_lat  = self.request.get("loc_lat")
+        loc_long = self.request.get("loc_long")
 
         # set up the thrift userStore
         userStoreHttpClient = THttpClient.THttpClient(USERSTORE_URI)
@@ -216,10 +219,6 @@ class Post(webapp.RequestHandler):
 
         # extract tags from the post
         tag_names = re.findall("#(\w+)", post)
-        
-        #note_attr = Types.NoteAttributes()
-        #note_attr.latitude
-        #note_attr.longitude
 
         # make the note
         note = Types.Note()
@@ -227,7 +226,12 @@ class Post(webapp.RequestHandler):
         note.content = NOTE_TEMPLATE % post
         note.notebookGuid = notebook_id
         note.tagNames = tag_names
-        #note.attributes = []
+        # add in geolocation if we have it
+        if loc_lat and loc_long:
+            note_attr = Types.NoteAttributes()
+            note_attr.latitude = float(loc_lat)
+            note_attr.longitude = float(loc_long)
+            note.attributes = note_attr
         createdNote = noteStore.createNote(oauth_token, note)
 
         self.redirect("/?" + urllib.urlencode({"posted":"true"}))

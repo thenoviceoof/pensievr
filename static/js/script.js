@@ -14,6 +14,7 @@ $("#last-post span").html(t.toLocaleTimeString());
 
 $("#aboutLink, #closeAboutLink").click(function(){
     $("#about").toggle();
+    return false;
 });
 
 // geolocation

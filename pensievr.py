@@ -8,6 +8,7 @@ import urllib
 #import urlparse
 import cgi
 import time
+import re
 
 import logging
 from gaesessions import get_current_session
@@ -198,14 +199,15 @@ class Post(webapp.RequestHandler):
             # !! check if the notebook is deleted
             pensievr_nb = noteStore.getNotebook(oauth_token, notebook_id)
 
-        # !!! extract tags from the post
+        # extract tags from the post
+        tag_names = re.findall("#(\w+)", post)
         
         # make the note
         note = Types.Note()
         note.title = DEFAULT_NOTE_TITLE
         note.content = post
         note.notebookGuid = notebook_id
-        note.tagNames = 
+        note.tagNames = tag_names
         createdNote = noteStore.createNote(authToken, note)
       
         note_attr = Types.NoteAttributes()

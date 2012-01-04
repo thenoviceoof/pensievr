@@ -146,38 +146,50 @@ import evernote.edam.notestore.NoteStore as NoteStore
 import evernote.edam.type.ttypes as Types
 import evernote.edam.error.ttypes as Errors
 
+USERSTORE_URI = "https://%s/edam/user" % DOMAIN
 NOTESTORE_URI_BASE = "https://%s/edam/note/" % DOMAIN
+
 NOTEBOOK_NAME = "Pensievr Notebook"
+
 DEFAULT_NOTE_TITLE = "Untitled"
+NOTE_TEMPLATE = """<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd">
+<en-note>%s</en-note>
+"""
 
 # post action
 class Post(webapp.RequestHandler):
     # ajax call eventually?
     def post(self):
         # check if we have session info
+        session = get_current_session()
         if not(session.is_active()) or not(session["done"]):
             raise Exception("Session is not active")
         post = self.request.get("post")
 
-        # check EDAM version...
+        # set up the thrift userStore
+        userStoreHttpClient = THttpClient.THttpClient(USERSTORE_URI)
+        userStoreProtocol = TBinaryProtocol.TBinaryProtocol(userStoreHttpClient)
+        userStore = UserStore.Client(userStoreProtocol)
+        # check EDAM version
         versionOK = userStore.checkVersion("Python EDAMTest",
                                            UserStoreConstants.EDAM_VERSION_MAJOR,
                                            UserStoreConstants.EDAM_VERSION_MINOR)
         if not(versionOK):
             raise Exception("EDAM versions do not match")
 
-        # set up the thrift protocol
-        noteStoreUri =  NOTESTORE_URI_BASE + shard
-        noteStoreHttpClient = THttpClient.THttpClient(noteStoreUri)
-        noteStoreProtocol = TBinaryProtocol.TBinaryProtocol(noteStoreHttpClient)
-        noteStore = NoteStore.Client(noteStoreProtocol)
-
         # unwrap the session variables
         oauth_token = session['oauth_token']
         shard = session['shard']
         user_id = session['user']
-        user = EvernoteUser.get(user_id)
+        user = EvernoteUser.get_by_key_name(user_id)
         notebook_id = user.notebook_id
+
+        # set up the thrift protocol for noteStore
+        noteStoreUri =  NOTESTORE_URI_BASE + shard
+        noteStoreHttpClient = THttpClient.THttpClient(noteStoreUri)
+        noteStoreProtocol = TBinaryProtocol.TBinaryProtocol(noteStoreHttpClient)
+        noteStore = NoteStore.Client(noteStoreProtocol)
 
         # get or make the notebook
         pensievr_nb = None
@@ -188,9 +200,12 @@ class Post(webapp.RequestHandler):
                 if notebook.name == NOTEBOOK_NAME:
                     pensievr_nb = notebook
             # if we don't have a pensievr notebook, make one
+            tmp_nb = Types.Notebook()
+            tmp_nb.name = NOTEBOOK_NAME
+            tmp_nb.defaultNotebook = False
+            tmp_nb.published = False
             if not(pensievr_nb):
-                pensievr_nb = noteStore.createNotebook(oauth_token,
-                                                       NOTEBOOK_NAME)
+                pensievr_nb = noteStore.createNotebook(oauth_token, tmp_nb)
             # update the user
             notebook_id = pensievr_nb.guid
             user.notebook_id = notebook_id
@@ -202,17 +217,18 @@ class Post(webapp.RequestHandler):
         # extract tags from the post
         tag_names = re.findall("#(\w+)", post)
         
+        #note_attr = Types.NoteAttributes()
+        #note_attr.latitude
+        #note_attr.longitude
+
         # make the note
         note = Types.Note()
         note.title = DEFAULT_NOTE_TITLE
-        note.content = post
+        note.content = NOTE_TEMPLATE % post
         note.notebookGuid = notebook_id
         note.tagNames = tag_names
-        createdNote = noteStore.createNote(authToken, note)
-      
-        note_attr = Types.NoteAttributes()
-        #note_attr.latitude
-        #note_attr.longitude
+        #note.attributes = []
+        createdNote = noteStore.createNote(oauth_token, note)
 
         self.redirect("/?" + urllib.urlencode({"posted":"true"}))
 

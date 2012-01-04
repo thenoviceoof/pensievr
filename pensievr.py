@@ -214,7 +214,6 @@ class Post(webapp.RequestHandler):
         #note_attr.latitude
         #note_attr.longitude
 
-        # !!! actually make the Evernote call
         self.redirect("/?" + urllib.urlencode({"posted":"true"}))
 
 # logout: clear the cookies/session

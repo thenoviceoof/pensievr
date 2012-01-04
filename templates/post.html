@@ -3,8 +3,9 @@
 {% block tagline %}What are you thinking?{% endblock %}
 
 {% block main %}
+<a href="/logout">Logout of Pensievr</a>
 {% if posted %}
-  <div id="last-post">Last post: <span>{{ posted }}</span></div>
+<div id="last-post">Last post: <span>{{ posted }}</span></div>
 {% endif %}
 <form action="/post" method="POST" name="post_form">
   <textarea id="post" name="post"></textarea><br/>

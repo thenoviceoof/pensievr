@@ -1,5 +1,11 @@
 {% extends "base.html" %}
 
+{% block extraStyles %}
+{% if count %}
+body{background:url("/static/img/trees/tree{{ count }}.png") center center no-repeat;}
+{% endif %}
+{% endblock %}
+
 {% block tagline %}What are you thinking?{% endblock %}
 
 {% block main %}
@@ -10,11 +16,12 @@
 <form action="/post" method="POST" name="post_form">
   <input type="hidden" name="loc_lat" id="loc_lat" value="" />
   <input type="hidden" name="loc_long" id="loc_long" value="" />
+  <input type="hidden" name="time" id="time" value="" />
   <textarea id="post" name="post"></textarea><br/>
   <button id="submit-post">Submit</button>
 </form>
 {% endblock %}
 
 {% block script %}
-<script>get_location();</script>
+<script>set_time(); get_location();</script>
 {% endblock %}

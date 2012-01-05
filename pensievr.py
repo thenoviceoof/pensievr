@@ -4,9 +4,10 @@ from google.appengine.ext.webapp import template
 from google.appengine.ext.webapp.util import run_wsgi_app
 from google.appengine.api.app_identity import get_application_id
 import urllib
-# only becomes available in 2.6
-#import urlparse
+#import urlparse # module only becomes available in 2.6
 import cgi
+import datetime # for posting date tracking 
+import math # for log
 import time
 import re
 
@@ -46,16 +47,21 @@ from config import API_KEY, API_SECRET
 class Index(webapp.RequestHandler):
     def get(self):
         session = get_current_session()
+        pars = {}
         if session.is_active() and session.get("done", None):
             posted = session.get("posted", None)
             # if we just redirected from posting, then 
             if posted:
                 posted = time.time()
                 session["posted"] = None
-            pars = {"posted": posted}
+            pars["posted"] = posted
+            # grab the number of posts
+            user_id = session['user']
+            user = EvernoteUser.get_by_key_name(user_id)
+            count = user.update_day_count
+            pars["count"] = "%02d" % math.floor(math.log(count+1, 2))
             self.response.out.write(template.render("templates/post.html",pars))
         else:
-            pars = {}
             if session.is_active() and session.get("message",None):
                 pars["message"] = session["message"]
                 session["message"] = None
@@ -174,6 +180,7 @@ class Post(webapp.RequestHandler):
         post = self.request.get("post")
         loc_lat  = self.request.get("loc_lat")
         loc_long = self.request.get("loc_long")
+        local_time_stamp = self.request.get("time")
 
         # set up the thrift userStore
         userStoreHttpClient = THttpClient.THttpClient(USERSTORE_URI)
@@ -219,7 +226,7 @@ class Post(webapp.RequestHandler):
             user.notebook_id = notebook_id
             user.put()
         else:
-            # !! check if the notebook is deleted
+            # check if the notebook is deleted - throw exception
             pensievr_nb = noteStore.getNotebook(oauth_token, notebook_id)
 
         # extract tags from the post
@@ -238,6 +245,14 @@ class Post(webapp.RequestHandler):
             note_attr.longitude = float(loc_long)
             note.attributes = note_attr
         createdNote = noteStore.createNote(oauth_token, note)
+
+        # update the user days posted count
+        timestamp = datetime.datetime.fromtimestamp(float(local_time_stamp)/1000)
+        posted_date = timestamp.date()
+        if user.update_date.date() != posted_date:
+            user.update_date = timestamp
+            user.update_day_count = user.update_day_count + 1
+            user.put()
 
         session["posted"] = True
         self.redirect("/")

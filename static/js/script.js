@@ -34,3 +34,8 @@ function get_location() {
 	error('not supported');
     }
 }
+
+// get current time stamp
+function set_time() {
+    $("#time").val((new Date()).getTime());
+}

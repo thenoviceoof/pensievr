@@ -1,2 +1,7 @@
+# DOMAIN = "sandbox.evernote.com"
+DOMAIN = "www.evernote.com"
+
 API_KEY = ""
 API_SECRET = ""
+
+DEBUG = True

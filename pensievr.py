@@ -34,14 +34,11 @@ class EvernoteUser(db.Model):
 ################################################################################
 # Controllers
 
-DOMAIN = "sandbox.evernote.com"
-# DOMAIN = "www.evernote.com"
+from config import API_KEY, API_SECRET, DOMAIN, DEBUG
 
 TEMP_CRED_URI = "https://%s/oauth" % DOMAIN
 OWNER_AUTH_URI = "https://%s/OAuth.action" % DOMAIN
 TOKEN_REQUEST_URI = "https://%s/oauth" % DOMAIN
-
-from config import API_KEY, API_SECRET
 
 # index
 class Index(webapp.RequestHandler):
@@ -273,7 +270,7 @@ application = webapp.WSGIApplication(
      ('/callback', OAuthCallback),
      ('/logout', Logout),
      ],
-    debug=True)
+    debug=DEBUG)
 
 def main():
     run_wsgi_app(application)

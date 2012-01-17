@@ -329,8 +329,8 @@ class Post(webapp.RequestHandler):
             self.redirect("/")
 
         # update the user days posted count
-        timestamp = datetime.datetime.fromtimestamp(float(local_time_stamp)/1000)
-        posted_date = timestamp.date()
+        date_obj = datetime.datetime.strptime(local_time_stamp, "%Y-%m-%d")
+        posted_date = date_obj.date()
         if user.update_date.date() != posted_date:
             user.update_date = timestamp
             user.update_day_count = user.update_day_count + 1

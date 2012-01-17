@@ -35,7 +35,14 @@ function get_location() {
     }
 }
 
-// get current time stamp
+// get current date stamp
 function set_time() {
-    $("#time").val((new Date()).getTime());
+    var dobj = new Date();
+    var y = dobj.getFullYear();
+    var m = dobj.getMonth() + 1; // because js is silly
+    var d = dobj.getDate();
+    y = (y<10 ? "0" : "")+y;
+    m = (m<10 ? "0" : "")+m;
+    d = (d<10 ? "0" : "")+d
+    $("#time").val(y+"-"+m+"-"+d);
 }

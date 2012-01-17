@@ -48,15 +48,15 @@ NOTESTORE_URI_BASE = "https://%s/edam/note/" % DOMAIN
 ################################################################################
 # util
 
-def make_note_obj(title, post, location):
+def make_note_obj(notebook, title, post, location):
     # extract tags from the post
     tag_names = re.findall("#(\w+)", post)
 
     # make the note
     note = Types.Note()
     note.title = DEFAULT_NOTE_TITLE
-    note.content = NOTE_TEMPLATE % post
-    note.notebookGuid = notebook_id
+    note.content = NOTE_TEMPLATE % cgi.escape(post)
+    note.notebookGuid = notebook
     note.tagNames = tag_names
     # add in geolocation if we have it
     loc_lat, loc_long = location
@@ -85,6 +85,8 @@ class EvernoteNote(db.Model):
     user = db.ReferenceProperty(EvernoteUser,
                                 collection_name="deferred_notes")
     note = db.StringProperty()
+    loc_lat = db.StringProperty()
+    loc_long = db.StringProperty()
     # check dates, make sure the note isn't too old
     create_date = db.DateTimeProperty(auto_now_add=True)
 
@@ -194,23 +196,35 @@ class OAuthCallback(webapp.RequestHandler):
         if not(user.user_id):
             user.user_id = user_id
             user.put()
+
         # go through user's redacted notes, try to instate them
-        for note in user.deferred_notes:
-            # if the note is too old, forget about it
-            if (time.time() - time.mktime(note.create_date.timetuple())
-                > 24*3600):
-                note.delete()
-            post = note.note
-            note = make_note_obj(title=DEFAULT_NOTE_TITLE,
-                                 post=NOTE_TEMPLATE % post,
-                                 location=(loc_lat, loc_long))
-            try:
-                createdNote = noteStore.createNote(oauth_token, note)
-            except EDAMUserException:
-                # don't do anything after failure
-                pass
-            else:
-                note.delete()
+        if user.notebook_id:
+            # set up the thrift protocol for noteStore
+            noteStoreUri =  NOTESTORE_URI_BASE + shard
+            noteStoreHttpClient = THttpClient.THttpClient(noteStoreUri)
+            noteStoreProtocol = TBinaryProtocol.TBinaryProtocol(noteStoreHttpClient)
+            noteStore = NoteStore.Client(noteStoreProtocol)
+
+            for note in user.deferred_notes:
+                # if the note is too old, forget about it
+                if (time.time() - time.mktime(note.create_date.timetuple())
+                    > 24*3600):
+                    note.delete()
+                post = note.note
+                loc_lat = note.loc_lat
+                loc_long = note.loc_long
+
+                note_obj = make_note_obj(notebook = user.notebook_id,
+                                         title=DEFAULT_NOTE_TITLE,
+                                         post=post,
+                                         location=(loc_lat, loc_long))
+                try:
+                    createdNote = noteStore.createNote(oauth_token, note_obj)
+                except Errors.EDAMUserException:
+                    # don't do anything after failure
+                    pass
+                else:
+                    note.delete()
 
         self.redirect("/")
 
@@ -252,15 +266,18 @@ class Post(webapp.RequestHandler):
         noteStoreProtocol = TBinaryProtocol.TBinaryProtocol(noteStoreHttpClient)
         noteStore = NoteStore.Client(noteStoreProtocol)
 
+        log = logging.getLogger(__name__)
+
         # get or make the notebook
         pensievr_nb = None
         if not(notebook_id):
             # first look for the notebook
             try:
                 notebooks = noteStore.listNotebooks(oauth_token)
-            except EDAMUserException:
+            except Errors.EDAMUserException, e:
                 # save the note
-                note = EvernoteNote(user=user, note=post)
+                note = EvernoteNote(user=user, note=post,
+                                    loc_lat=loc_lat, loc_long=loc_long)
                 note.put()
                 # clear out the bad session
                 session.terminate()
@@ -274,7 +291,18 @@ class Post(webapp.RequestHandler):
             tmp_nb.defaultNotebook = False
             tmp_nb.published = False
             if not(pensievr_nb):
-                pensievr_nb = noteStore.createNotebook(oauth_token, tmp_nb)
+                try:
+                    pensievr_nb = noteStore.createNotebook(oauth_token, tmp_nb)
+                except Errors.EDAMUserException, e:
+                    if e.errorCode != 9: # INVALID_AUTH
+                        raise
+                    # save the note
+                    note_obj = EvernoteNote(user=user, note=post,
+                                            loc_lat=loc_lat, loc_long=loc_long)
+                    note_obj.put()
+                    # clear out the bad session
+                    session.terminate()
+                    self.redirect("/")
             # update the user
             notebook_id = pensievr_nb.guid
             user.notebook_id = notebook_id
@@ -283,14 +311,18 @@ class Post(webapp.RequestHandler):
             # check if the notebook is deleted - throw exception
             pensievr_nb = noteStore.getNotebook(oauth_token, notebook_id)
 
-        note = make_note_obj(title=DEFAULT_NOTE_TITLE,
-                             post=NOTE_TEMPLATE % post,
+        note = make_note_obj(notebook=notebook_id,
+                             title=DEFAULT_NOTE_TITLE,
+                             post=post,
                              location=(loc_lat, loc_long))
         try:
             createdNote = noteStore.createNote(oauth_token, note)
-        except EDAMUserException:
+        except Errors.EDAMUserException, e:
+            if e.errorCode != 9: # INVALID_AUTH
+                raise
             # save the note
-            note_obj = EvernoteNote(user=user, note=post)
+            note_obj = EvernoteNote(user=user, note=post,
+                                    loc_lat=loc_lat, loc_long=loc_long)
             note_obj.put()
             # clear out the bad session
             session.terminate()

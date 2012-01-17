@@ -18,6 +18,55 @@ import evernote
 
 import oauth2 as oauth
 
+# Evernote imports
+import thrift.protocol.TBinaryProtocol as TBinaryProtocol
+import thrift.transport.THttpClient as THttpClient
+import evernote.edam.userstore.UserStore as UserStore
+import evernote.edam.userstore.constants as UserStoreConstants
+import evernote.edam.notestore.NoteStore as NoteStore
+import evernote.edam.type.ttypes as Types
+import evernote.edam.error.ttypes as Errors
+
+NOTEBOOK_NAME = "Pensievr Notebook"
+
+DEFAULT_NOTE_TITLE = "Untitled"
+NOTE_TEMPLATE = """<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd">
+<en-note>%s</en-note>
+"""
+
+# config imports
+from config import API_KEY, API_SECRET, DOMAIN, DEBUG
+
+TEMP_CRED_URI = "https://%s/oauth" % DOMAIN
+OWNER_AUTH_URI = "https://%s/OAuth.action" % DOMAIN
+TOKEN_REQUEST_URI = "https://%s/oauth" % DOMAIN
+
+USERSTORE_URI = "https://%s/edam/user" % DOMAIN
+NOTESTORE_URI_BASE = "https://%s/edam/note/" % DOMAIN
+
+################################################################################
+# util
+
+def make_note_obj(title, post, location):
+    # extract tags from the post
+    tag_names = re.findall("#(\w+)", post)
+
+    # make the note
+    note = Types.Note()
+    note.title = DEFAULT_NOTE_TITLE
+    note.content = NOTE_TEMPLATE % post
+    note.notebookGuid = notebook_id
+    note.tagNames = tag_names
+    # add in geolocation if we have it
+    loc_lat, loc_long = location
+    if loc_lat and loc_long:
+        note_attr = Types.NoteAttributes()
+        note_attr.latitude = float(loc_lat)
+        note_attr.longitude = float(loc_long)
+        note.attributes = note_attr
+    return note
+
 ################################################################################
 # Model
 
@@ -31,14 +80,16 @@ class EvernoteUser(db.Model):
     # how "old" of an image to show
     update_day_count = db.IntegerProperty(default=0)
 
+# if permissions get screwed up (session not cleared locally), save the note
+class EvernoteNote(db.Model):
+    user = db.ReferenceProperty(EvernoteUser,
+                                collection_name="deferred_notes")
+    note = db.StringProperty()
+    # check dates, make sure the note isn't too old
+    create_date = db.DateTimeProperty(auto_now_add=True)
+
 ################################################################################
 # Controllers
-
-from config import API_KEY, API_SECRET, DOMAIN, DEBUG
-
-TEMP_CRED_URI = "https://%s/oauth" % DOMAIN
-OWNER_AUTH_URI = "https://%s/OAuth.action" % DOMAIN
-TOKEN_REQUEST_URI = "https://%s/oauth" % DOMAIN
 
 # index
 class Index(webapp.RequestHandler):
@@ -123,7 +174,7 @@ class OAuthCallback(webapp.RequestHandler):
 
         token_req = TOKEN_REQUEST_URI
         resp, content = client.request(token_req + "?", "GET")
-        # deprecated in 2.6+, use urlparse instead
+        # deprecated in 2.6+, use urlparse instead of cgi.parse_qsl
         access_token = dict(cgi.parse_qsl(content))
 
         log = logging.getLogger(__name__)
@@ -143,27 +194,25 @@ class OAuthCallback(webapp.RequestHandler):
         if not(user.user_id):
             user.user_id = user_id
             user.put()
+        # go through user's redacted notes, try to instate them
+        for note in user.deferred_notes:
+            # if the note is too old, forget about it
+            if (time.time() - time.mktime(note.create_date.timetuple())
+                > 24*3600):
+                note.delete()
+            post = note.note
+            note = make_note_obj(title=DEFAULT_NOTE_TITLE,
+                                 post=NOTE_TEMPLATE % post,
+                                 location=(loc_lat, loc_long))
+            try:
+                createdNote = noteStore.createNote(oauth_token, note)
+            except EDAMUserException:
+                # don't do anything after failure
+                pass
+            else:
+                note.delete()
 
         self.redirect("/")
-
-import thrift.protocol.TBinaryProtocol as TBinaryProtocol
-import thrift.transport.THttpClient as THttpClient
-import evernote.edam.userstore.UserStore as UserStore
-import evernote.edam.userstore.constants as UserStoreConstants
-import evernote.edam.notestore.NoteStore as NoteStore
-import evernote.edam.type.ttypes as Types
-import evernote.edam.error.ttypes as Errors
-
-USERSTORE_URI = "https://%s/edam/user" % DOMAIN
-NOTESTORE_URI_BASE = "https://%s/edam/note/" % DOMAIN
-
-NOTEBOOK_NAME = "Pensievr Notebook"
-
-DEFAULT_NOTE_TITLE = "Untitled"
-NOTE_TEMPLATE = """<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd">
-<en-note>%s</en-note>
-"""
 
 # post action
 class Post(webapp.RequestHandler):
@@ -207,7 +256,15 @@ class Post(webapp.RequestHandler):
         pensievr_nb = None
         if not(notebook_id):
             # first look for the notebook
-            notebooks = noteStore.listNotebooks(oauth_token)
+            try:
+                notebooks = noteStore.listNotebooks(oauth_token)
+            except EDAMUserException:
+                # save the note
+                note = EvernoteNote(user=user, note=post)
+                note.put()
+                # clear out the bad session
+                session.terminate()
+                self.redirect("/")
             for notebook in notebooks:
                 if notebook.name == NOTEBOOK_NAME:
                     pensievr_nb = notebook
@@ -226,22 +283,18 @@ class Post(webapp.RequestHandler):
             # check if the notebook is deleted - throw exception
             pensievr_nb = noteStore.getNotebook(oauth_token, notebook_id)
 
-        # extract tags from the post
-        tag_names = re.findall("#(\w+)", post)
-
-        # make the note
-        note = Types.Note()
-        note.title = DEFAULT_NOTE_TITLE
-        note.content = NOTE_TEMPLATE % post
-        note.notebookGuid = notebook_id
-        note.tagNames = tag_names
-        # add in geolocation if we have it
-        if loc_lat and loc_long:
-            note_attr = Types.NoteAttributes()
-            note_attr.latitude = float(loc_lat)
-            note_attr.longitude = float(loc_long)
-            note.attributes = note_attr
-        createdNote = noteStore.createNote(oauth_token, note)
+        note = make_note_obj(title=DEFAULT_NOTE_TITLE,
+                             post=NOTE_TEMPLATE % post,
+                             location=(loc_lat, loc_long))
+        try:
+            createdNote = noteStore.createNote(oauth_token, note)
+        except EDAMUserException:
+            # save the note
+            note_obj = EvernoteNote(user=user, note=post)
+            note_obj.put()
+            # clear out the bad session
+            session.terminate()
+            self.redirect("/")
 
         # update the user days posted count
         timestamp = datetime.datetime.fromtimestamp(float(local_time_stamp)/1000)

@@ -309,7 +309,18 @@ class Post(webapp.RequestHandler):
             user.put()
         else:
             # check if the notebook is deleted - throw exception
-            pensievr_nb = noteStore.getNotebook(oauth_token, notebook_id)
+            try:
+                pensievr_nb = noteStore.getNotebook(oauth_token, notebook_id)
+            except Errors.EDAMUserException, e:
+                if e.errorCode != 9: # INVALID_AUTH
+                    raise
+                # save the note
+                note_obj = EvernoteNote(user=user, note=post,
+                                        loc_lat=loc_lat, loc_long=loc_long)
+                note_obj.put()
+                # clear out the bad session
+                session.terminate()
+                self.redirect("/")
 
         note = make_note_obj(notebook=notebook_id,
                              title=DEFAULT_NOTE_TITLE,
@@ -332,7 +343,7 @@ class Post(webapp.RequestHandler):
         date_obj = datetime.datetime.strptime(local_time_stamp, "%Y-%m-%d")
         posted_date = date_obj.date()
         if user.update_date.date() != posted_date:
-            user.update_date = timestamp
+            user.update_date = date_obj
             user.update_day_count = user.update_day_count + 1
             user.put()
 

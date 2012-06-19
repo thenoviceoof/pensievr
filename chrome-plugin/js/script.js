@@ -1,3 +1,7 @@
+function error(str) {
+    $("#error-msg").text(str);
+}
+
 // geolocation
 function get_location() {
     function loc_success(position) {
@@ -7,7 +11,7 @@ function get_location() {
         $("#loc_long").val(position.coords.longitude);
     }
     function loc_error(msg) {
-        alert("Sorry, couldn't fetch your location");
+        error("Sorry, couldn't fetch your location");
     }
 
     if (navigator.geolocation) {

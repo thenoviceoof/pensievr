@@ -9,7 +9,8 @@
     },
     "permissions": [
         "https://pensievr.appspot.com",
-        "geolocation"
+        "geolocation",
+        "localstorage"
     ],
     "web_accessible_resources": [
         "script.js"

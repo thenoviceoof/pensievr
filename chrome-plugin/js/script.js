@@ -31,13 +31,15 @@ $(document).ready(function() {
     if(document.post_form)
         document.post_form.post.focus();
 
+    function save() {
+        localStorage.cpost = JSON.stringify($("#post").val());
+    }
     // restore from localStorage
     if(localStorage.cpost)
         $("#post").val(JSON.parse(localStorage.cpost));
     // save to localStorage
-    $("#post").change(function(e){
-        localStorage.cpost = JSON.stringify($("#post").val());
-    });
+    $("#post").change(save).bind('keyup', save);
+
     $("#post_form").submit(function(e){
         var d = {
             loc_lat: $("#loc_lat").val(),

@@ -24,16 +24,27 @@ function get_location() {
 
 var pensievr_url = "http://pensievr.appspot.com/";
 
+function save() {
+    localStorage.cpost = JSON.stringify($("#post").val());
+}
+
 $(document).ready(function() {
     get_location();
 
-    // auto-focus on the text field
-    if(document.post_form)
-        document.post_form.post.focus();
+    // dismissal keycombo
+    $(document).keydown(function(e){
+        if(e.ctrlKey && e.keyCode == 103) {
+            alert('mu');
+        }
+    });
 
-    function save() {
-        localStorage.cpost = JSON.stringify($("#post").val());
+    // auto-focus on the text field
+    function autofocus() {
+        if(document.post_form)
+            document.post_form.post.focus();
     }
+    autofocus();
+
     // restore from localStorage
     if(localStorage.cpost)
         $("#post").val(JSON.parse(localStorage.cpost));
@@ -44,15 +55,28 @@ $(document).ready(function() {
         var d = {
             loc_lat: $("#loc_lat").val(),
             loc_long: $("#loc_lat").val(),
+            // need better time structure? evernote?
             time: $("#time").val(),
             post: $("#post").val()
         };
+        if(!localStorage.posts)
+            localStorage.posts = JSON.stringify({});
+        var ps = JSON.parse(localStorage.posts);
+        ps[d['time']] = d; // using time as the index??
+        localStorage.posts = JSON.stringify(d);
+
         localStorage.cpost = undefined;
         $("#post").val("");
         $.ajax({
             url: pensievr_url + "post",
-            data: d
+            data: d,
+            success: function() {
+                var ps = JSON.parse(localStorage.posts);
+                ps[d['time']] = undefined;
+                localStorage.posts = JSON.stringify(d);
+            }
         });
+        autofocus();
         e.preventDefault();
         return false;
     });

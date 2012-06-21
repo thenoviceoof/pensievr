@@ -3,16 +3,16 @@
     "version": "0.1",
     "manifest_version": 2,
     "description": "A write-only twitter-like diary",
-    "browser_action": {
-        "default_icon": "icon.png",
-        "default_popup": "popup.html"
-    },
+    "content_scripts": [
+        {
+            "matches": ["http://*/*", "https://*/*"],
+            "exclude_matches": ["https://pensievr.appspot.com/*"],
+            "js": ["jquery-1.7.2.min.js", "cs.js"]
+        }
+    ],
     "permissions": [
         "https://pensievr.appspot.com",
         "geolocation",
         "localstorage"
-    ],
-    "web_accessible_resources": [
-        "script.js"
     ]
 }

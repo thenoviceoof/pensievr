@@ -8,6 +8,11 @@
             "matches": ["http://*/*", "https://*/*"],
             "exclude_matches": ["https://pensievr.appspot.com/*"],
             "js": ["jquery-1.7.2.min.js", "cs.js"]
+        },
+        {
+            "matches": ["https://pensievr.appspot.com/*",
+                        "https://www.evernote.com/*"],
+            "js": ["jqeury-1.7.2.min.js", "evernote.js"]
         }
     ],
     "permissions": [

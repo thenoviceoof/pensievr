@@ -1,6 +1,4 @@
-function error(str) {
-    $("#error-msg").text(str);
-}
+function error(str) { $("#error-msg").text(str); }
 
 // geolocation
 function get_location() {
@@ -17,7 +15,6 @@ function get_location() {
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(loc_success, loc_error);
     } else {
-        alert('not supported');
         error('not supported');
     }
 }
@@ -30,13 +27,6 @@ function save() {
 
 $(document).ready(function() {
     get_location();
-
-    // dismissal keycombo
-    $(document).keydown(function(e){
-        if(e.ctrlKey && e.keyCode == 103) {
-            alert('mu');
-        }
-    });
 
     // auto-focus on the text field
     function autofocus() {

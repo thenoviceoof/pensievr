@@ -2,7 +2,9 @@
 
 {% block extraStyles %}
 {% if count %}
-body{background:url("/static/img/trees/tree{{ count }}.png") center center no-repeat;}
+body{
+  background:url("/static/img/trees/tree{{ count }}.png") center center no-repeat;
+}
 {% endif %}
 {% endblock %}
 
@@ -23,5 +25,6 @@ body{background:url("/static/img/trees/tree{{ count }}.png") center center no-re
 {% endblock %}
 
 {% block script %}
+<script src="/static/js/raphael-min.js"></script>
 <script>set_time(); get_location();</script>
 {% endblock %}

@@ -4,19 +4,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 // post.html
 
-// auto-focus on the text field
-    if(document.post_form)
-        document.post_form.post.focus();
-
-// convert the seconds to local time
-var t = new Date(1000*$("#last-post span").html());
-$("#last-post span").html(t.toLocaleTimeString());
-
-$("#aboutLink, #closeAboutLink").click(function(){
-    $("#about").toggle();
-    return false;
-});
-
 // geolocation
 function get_location() {
     function loc_success(position) {
@@ -46,3 +33,22 @@ function set_time() {
     d = (d<10 ? "0" : "")+d
     $("#time").val(y+"-"+m+"-"+d);
 }
+
+$(document).ready(function(){
+    // auto-focus on the text field
+    if(document.post_form)
+        document.post_form.post.focus();
+
+    // convert the seconds to local time
+    var t = new Date(1000*$("#last-post span").html());
+    $("#last-post span").html(t.toLocaleTimeString());
+
+    $("#aboutLink, #closeAboutLink").click(function(){
+        $("#about").toggle();
+        return false;
+    });
+
+    $("#post").keydown(function(e){
+        // display stuff with raphael
+    });
+});

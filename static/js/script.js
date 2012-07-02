@@ -79,17 +79,36 @@ $(document).ready(function(){
             return;
         var x = offset_x*(height/2 + 2*margin) + margin/2;
         var y = offset_y*(height + 2*margin) + margin/2;
-        paper.rect(x-margin/2, y-margin/2, height/2+margin, height+margin, margin)
+        paper.text(x + height/4, y + height/2, String.fromCharCode(num))
+            .attr({"font-size":"20pt"});
+        var r = paper.rect(x-margin/2, y-margin/2,
+                           height/2+margin, height+margin, margin)
             .attr({fill:"#DDD",stroke:"#DDD"});
+        var st = paper.set();
         for(var i=0; i<2; i++) {
             for(var j=0; j<4; j++) {
                 if( (m[num] >> (i*4 + j)) & 1 == 1 ) {
-                    paper.rect(x + i*height/4,
-                               y + j*height/4,
-                               height/4,height/4).attr({fill:"black"});
+                    var b = paper.rect(x + i*height/4,
+                                       y + j*height/4,
+                                       height/4,height/4).attr({fill:"black"});
+                    st.push(b);
                 }
             }
         }
+        r.mouseover(function() {
+            r.attr({opacity:0.0});
+            st.attr({opacity:0.0});
+        }).mouseout(function() {
+            r.attr({opacity:1.0});
+            st.attr({opacity:1.0});
+        });
+        st.mouseover(function() {
+            r.attr({opacity:0.0});
+            st.attr({opacity:0.0});
+        }).mouseout(function() {
+            r.attr({opacity:1.0});
+            st.attr({opacity:1.0});
+        });
     }
     var cw = 40;
     var cm = 5;

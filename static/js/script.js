@@ -66,7 +66,9 @@ $(document).ready(function(){
         m = JSON.parse(localStorage.mapping);
     }
 
-    var paper = Raphael(10, 10, 1000, 200);
+    var w = $(document).width();
+    var h = $(document).height();
+    var paper = Raphael(0, 0, w, h);
     // display the contents with the mapping
     function gen_char(num, offset_x, offset_y, height, margin) {
         if(height === undefined)
@@ -75,8 +77,8 @@ $(document).ready(function(){
             margin = 8;
         if(num === 0)
             return;
-        var x = offset_x*(height/2 + 2*margin);
-        var y = offset_y*(height + 2*margin);
+        var x = offset_x*(height/2 + 2*margin) + margin/2;
+        var y = offset_y*(height + 2*margin) + margin/2;
         paper.rect(x-margin/2, y-margin/2, height/2+margin, height+margin, margin)
             .attr({fill:"#DDD",stroke:"#DDD"});
         for(var i=0; i<2; i++) {
@@ -89,10 +91,14 @@ $(document).ready(function(){
             }
         }
     }
+    var cw = 40;
+    var cm = 5;
     function gen_str(str) {
         for(var c in str) {
             var chr = str[c];
-            gen_char(chr.charCodeAt(0), c, 0, 40, 5);
+            var cr = Math.floor(c*(cw+2*cm) / w);
+            var maxc = Math.floor(cr*(w/(cw+2*cm)));
+            gen_char(chr.charCodeAt(0), c - maxc, cr, cw, cm);
         }
     }
 

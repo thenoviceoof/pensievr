@@ -7,6 +7,7 @@ html {
     width:100%;
     height:100%;
     margin:0;
+    font:14pt arial, sans-serif;
 }
 
 body {
@@ -18,33 +19,19 @@ body {
     margin:0;
 }
 
-#container {
-    display:block;
-    position:absolute;
-    width:28em;
-    height:16em;
-    top:50%;
-    left:50%;
-    margin:-10em 0 0 -6em;
-    padding:0 0 0 0;
-    text-align:center;
+header {
+    color:#DDD;
+    float:right;
 }
-
-#container header {
-}
-
-#container header h1 {
-    position:relative;
-    left:-0.5em;
-    margin:-0.1em 0 -0.4em 0;
-    font:72pt arial, sans-serif;
-}
-
-#container header h2 {
-    position:relative;
-    left:2.5em;
+header * {
+    display:inline-block;
     margin:0;
-    font:14pt arial, sans-serif;
+}
+header h1 {
+    font-size:72pt;
+}
+header h2 {
+    font-size:14pt;
 }
 
 footer {
@@ -53,11 +40,8 @@ footer {
     bottom:0;
     width:100%;
     margin:0 auto;
-    font:10pt arial, sans-serif;
+    font-size:10pt;
     text-align:center;
-}
-
-#container #main {
 }
 
 /* ---------------------------------------------------------------------- */
@@ -66,7 +50,7 @@ footer {
 #message {
     margin-top:0.5em;
     color:gray;
-    font:12pt arial, sans-serif;
+    font-size:12pt;
     line-height:2em;
 }
 
@@ -112,30 +96,32 @@ footer {
 /* ---------------------------------------------------------------------- */
 /* post.html */
 
+#post_form {
+}
+
 #post {
-    width:20em;
-    height:5em;
-    margin:1em 0;
-    padding:0.5em;
+    position:absolute;
+    bottom:0;
+    left:0;
+    width:0em;
+    height:0em;
+    margin:0em 0;
+    padding:0em;
     font-size:14pt;
     border:2px #CCC solid;
 }
 
 #logout {
-    position:relative;
-    left:8em;
-    margin:0.5em 0 0 0;
-    font:10pt 'Syncopate', arial, sans-serif;
+    display:block;
+    position:absolute;
+    right:0;
+    top:0;
+    font-size:10pt;
     color:gray;
-}
-
-#submit-post {
-    padding:0.8em 1em;
-    font:12pt 'Syncopate', arial, sans-serif;
 }
 
 #last-post {
     margin-top:0.5em;
-    font:12pt 'Syncopate', arial, sans-serif;
+    font-size:12pt;
     color:gray;
 }

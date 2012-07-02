@@ -18,18 +18,15 @@
 </head>
 
 <body>
-  <div id="container">
-    <header>
-      <h1>Pensievr</h1>
-      <h2>{% block tagline %}{% endblock %}</h2>
-    </header>
+  <header>
+    <h2>{% block tagline %}{% endblock %}</h2>
+    <h1>Pensievr</h1>
+  </header>
 
-    <div id="main" role="main">
-      {% block main %}{% endblock %}
-    </div>
-
+  <div id="main" role="main">
+    {% block main %}{% endblock %}
   </div>
-
+  
   <footer>
     By <a href="http://thenoviceoof.com">thenoviceoof</a>
   </footer>

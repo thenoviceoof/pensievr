@@ -52,33 +52,59 @@ $(document).ready(function(){
     var m = new Array();
     var uniq = new Array();
     var r;
-    // !!! replace with fischer-yates shuffle
-    for(var i=0; i<256; i+=1) {
-        r = Math.floor(Math.random() * 256);
-        while(uniq[r]) {
+    if(!localStorage.mapping) {
+        // !!! replace with fischer-yates shuffle
+        for(var i=0; i<256; i+=1) {
             r = Math.floor(Math.random() * 256);
+            while(uniq[r]) {
+                r = Math.floor(Math.random() * 256);
+            }
+            m[i] = r;
         }
-        m[i] = r;
+        localStorage.mapping = JSON.stringify(m);
+    } else {
+        m = JSON.parse(localStorage.mapping);
     }
 
-    var paper = Raphael(10, 10, 1000, 100);
-    var count = 0;
+    var paper = Raphael(10, 10, 1000, 200);
     // display the contents with the mapping
-    function gen_char(num) {
-        paper.rect(count*30 - 2, -2, 24, 44, 4)
+    function gen_char(num, offset_x, offset_y, height, margin) {
+        if(height === undefined)
+            height = 60;
+        if(margin === undefined)
+            margin = 8;
+        if(num === 0)
+            return;
+        var x = offset_x*(height/2 + 2*margin);
+        var y = offset_y*(height + 2*margin);
+        paper.rect(x-margin/2, y-margin/2, height/2+margin, height+margin, margin)
             .attr({fill:"#DDD",stroke:"#DDD"});
         for(var i=0; i<2; i++) {
             for(var j=0; j<4; j++) {
                 if( (m[num] >> (i*4 + j)) & 1 == 1 ) {
-                    paper.rect(count*30 + i*10, j*10, 8,8).attr({fill:"black"});
+                    paper.rect(x + i*height/4,
+                               y + j*height/4,
+                               height/4,height/4).attr({fill:"black"});
                 }
             }
         }
-        count += 1;
+    }
+    function gen_str(str) {
+        for(var c in str) {
+            var chr = str[c];
+            gen_char(chr.charCodeAt(0), c, 0, 40, 5);
+        }
     }
 
-    $("#post").keydown(function(e){
+    function redraw() {
         // display stuff with raphael
-        gen_char(e.keyCode);
-    });
+        paper.clear();
+        var str = $("#post").val();
+        gen_str(str);
+    }
+
+    $("#post").keyup(redraw).keydown(redraw);
+
+    set_time();
+    get_location();
 });

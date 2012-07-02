@@ -12,9 +12,11 @@ body{
 
 {% block main %}
 <a id="logout" href="/logout">Logout of Pensievr</a>
+
 {% if posted %}
 <div id="last-post">Last post: <span>{{ posted }}</span></div>
 {% endif %}
+
 <form action="/post" method="POST" name="post_form">
   <input type="hidden" name="loc_lat" id="loc_lat" value="" />
   <input type="hidden" name="loc_long" id="loc_long" value="" />

@@ -37,14 +37,14 @@ body {
     position:relative;
     left:-0.5em;
     margin:-0.1em 0 -0.4em 0;
-    font:72pt 'Monsieur La Doulaise', cursive;
+    font:72pt arial, sans-serif;
 }
 
 #container header h2 {
     position:relative;
     left:2.5em;
     margin:0;
-    font:14pt 'Syncopate', arial, sans-serif;
+    font:14pt arial, sans-serif;
 }
 
 footer {
@@ -53,7 +53,7 @@ footer {
     bottom:0;
     width:100%;
     margin:0 auto;
-    font:10pt 'Syncopate', arial, sans-serif;
+    font:10pt arial, sans-serif;
     text-align:center;
 }
 
@@ -66,7 +66,7 @@ footer {
 #message {
     margin-top:0.5em;
     color:gray;
-    font:12pt 'Syncopate', arial, sans-serif;
+    font:12pt arial, sans-serif;
     line-height:2em;
 }
 
@@ -81,7 +81,7 @@ footer {
 #container #signin {
     margin:1em 0;
     padding:0.8em 1em;
-    font:12pt 'Syncopate', arial, sans-serif;
+    font:12pt arial, sans-serif;
 }
 
 #container #signin img {
@@ -90,7 +90,7 @@ footer {
 
 #aboutLink {
     color:gray;
-    font:12pt 'Syncopate', arial, sans-serif;
+    font:12pt arial, sans-serif;
 }
 
 #about {

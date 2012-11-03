@@ -48,7 +48,7 @@ $(document).ready(function(){
         return false;
     });
 
-    // create a mapping
+    // create a text/font mapping
     var m = new Array();
     var uniq = new Array();
     var r;
@@ -71,6 +71,7 @@ $(document).ready(function(){
     var paper = Raphael(0, 0, w, h);
     // display the contents with the mapping
     function gen_char(num, offset_x, offset_y, height, margin) {
+        // display a character for a given number
         if(height === undefined)
             height = 60;
         if(margin === undefined)
@@ -115,9 +116,11 @@ $(document).ready(function(){
     function gen_str(str) {
         for(var c in str) {
             var chr = str[c];
-            var cr = Math.floor(c*(cw+2*cm) / w);
-            var maxc = Math.floor(cr*(w/(cw+2*cm)));
-            gen_char(chr.charCodeAt(0), c - maxc, cr, cw, cm);
+            var char_width = (cw + 2*cm);
+            var chars_wide = w / char_width
+            var rows = Math.floor(c / chars_wide);
+            var cols = Math.floor(c % chars_wide);
+            gen_char(chr.charCodeAt(0), cols, rows, cw, cm);
         }
     }
 

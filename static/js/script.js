@@ -36,8 +36,13 @@ function set_time() {
 
 $(document).ready(function(){
     // auto-focus on the text field
-    if(document.post_form)
-        document.post_form.post.focus();
+    if(document.post_form) {
+        var $post = $(document.post_form.post);
+        $post.focus();
+        $(window).focus(function(e){
+            $post.focus();
+        });
+    }
 
     // convert the seconds to local time
     var t = new Date(1000*$("#last-post span").html());
@@ -80,7 +85,7 @@ $(document).ready(function(){
             return;
         var x = offset_x*(height/2 + 2*margin) + margin/2;
         var y = offset_y*(height + 2*margin) + margin/2;
-        paper.text(x + height/4, y + height/2, String.fromCharCode(num))
+        var t = paper.text(x + height/4, y + height/2, String.fromCharCode(num))
             .attr({"font-size":"20pt"});
         var r = paper.rect(x-margin/2, y-margin/2,
                            height/2+margin, height+margin, margin)
@@ -110,28 +115,35 @@ $(document).ready(function(){
             r.attr({opacity:1.0});
             st.attr({opacity:1.0});
         });
+        return new Array(r,st,t);
     }
     var cw = 40;
     var cm = 5;
+    var char_width = (cw + 2*cm);
+    var chars_wide = w / char_width;
+    var chars = new Array();
     function gen_str(str) {
+        chars = new Array();
         for(var c in str) {
             var chr = str[c];
-            var char_width = (cw + 2*cm);
-            var chars_wide = w / char_width
             var rows = Math.floor(c / chars_wide);
             var cols = Math.floor(c % chars_wide);
-            gen_char(chr.charCodeAt(0), cols, rows, cw, cm);
+            var disp = gen_char(chr.charCodeAt(0), cols, rows, cw, cm);
+            // save it for later
+            chars.push(disp);
         }
     }
 
+    var current_str = "";
     function redraw() {
         // display stuff with raphael
-        paper.clear();
         var str = $("#post").val();
+        console.log("Refresh page");
+        paper.clear();
         gen_str(str);
     }
 
-    $("#post").keyup(redraw).keydown(redraw);
+    $("#post").keyup(redraw);
 
     set_time();
     get_location();

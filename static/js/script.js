@@ -144,6 +144,13 @@ $(document).ready(function(){
     }
 
     $("#post").keyup(redraw);
+    $("#post").keydown(function(e){
+        // submit on enter
+        if(e.keyCode == 13) {
+            console.log('submit');
+            $(document.post_form).submit();
+        }
+    });
 
     set_time();
     get_location();
